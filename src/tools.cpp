@@ -44,7 +44,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
-    MatrixXd Hj(3,4);
+    MatrixXd Jacob(3,4);
     //recover state parameters
     float px = x_state(0);
     float py = x_state(1);
@@ -59,13 +59,13 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
     //check division by zero
     if(fabs(c1) < 0.0001){
         cout << "CalculateJacobian () - Error - Division by Zero" << endl;
-        return Hj;
+        return Jacob;
     }
 
     //compute the Jacobian matrix
-    Hj << (px/c2), (py/c2), 0, 0,
+    Jacob << (px/c2), (py/c2), 0, 0,
           -(py/c1), (px/c1), 0, 0,
           py*(vx*py - vy*px)/c3, px*(px*vy - py*vx)/c3, px/c2, py/c2;
 
-    return Hj;
+    return Jacob;
 }

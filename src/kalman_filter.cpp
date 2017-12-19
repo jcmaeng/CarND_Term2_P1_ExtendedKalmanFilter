@@ -40,8 +40,7 @@ void KalmanFilter::Update(const VectorXd &z) {
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
-  MatrixXd PHt = P_ * Ht;
-  MatrixXd K = PHt * Si;
+  MatrixXd K = P_ * Ht * Si;
 
   //new estimate
   x_ = x_ + (K * y);
@@ -55,4 +54,46 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   TODO:
     * update the state by using Extended Kalman Filter equations
   */
+  // In class 14 of lesson 5
+  // (rho, phi, rho_dot) <- h(x')(p'x, p'y, v'x, v'y)
+  float px = x_(0);
+  float py = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
+
+  float rho = sqrt(px*px + py*py);
+  float phi = atan2(py, px);
+  float rho_dot;
+
+  // check for divide by zero
+  if (fabs(rho) < 0.0001) {
+    rho_dot = 0;
+  } else {
+    rho_dot = (px*vx + py*vy)/rho;
+  }
+
+  // y = z - h(x')
+  VectorXd z_pred(3);
+  z_pred << rho, phi, rho_dot;
+  VectorXd y = z - z_pred;
+
+  // Normalizing Angles, phi between [-pi , pi ]
+  while(y(1) > M_PI || y(1)< -M_PI) {
+    if (y(1)> M_PI) {
+      y(1)-= 2*M_PI;
+    } else if (y(1)< -M_PI) {
+      y(1)+= 2*M_PI;
+    }
+  }
+
+  MatrixXd Ht = H_.transpose();
+  MatrixXd S = H_ * P_ * Ht + R_;
+  MatrixXd Si = S.inverse();
+  MatrixXd K = P_ * Ht * Si;
+
+  //new state
+  x_ = x_ + (K * y);
+  long x_size = x_.size();
+  MatrixXd I = MatrixXd::Identity(x_size, x_size);
+  P_ = (I - K * H_) * P_;
 }
