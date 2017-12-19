@@ -127,16 +127,16 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   float dt_4 = dt_3 * dt;
 
   //Modify the F matrix so that the time is integrated
-  kf_.F_(0, 2) = dt;
-  kf_.F_(1, 3) = dt;
+  ekf_.F_(0, 2) = dt;
+  ekf_.F_(1, 3) = dt;
 
   //set the acceleration noise components
   float noise_ax = 9;
   float noise_ay = 9;
 
   //set the process covariance matrix Q
-  kf_.Q_ = MatrixXd(4, 4);
-  kf_.Q_ <<  dt_4/4*noise_ax, 0, dt_3/2*noise_ax, 0,
+  ekf_.Q_ = MatrixXd(4, 4);
+  ekf_.Q_ <<  dt_4/4*noise_ax, 0, dt_3/2*noise_ax, 0,
          0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,
          dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
          0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
@@ -157,12 +157,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // Radar updates
     Tools tls;
-    ekf_.Hj_ = tls.CalculateJacobian();
+    ekf_.H_ = tls.CalculateJacobian(ekf_.x_);
     ekf_.R_ = R_radar_;
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
   } else {
     // Laser updates
-    ekf_.Hj_ = H_laser_;
+    ekf_.H_ = H_laser_;
     ekf_.R_ = R_laser_;
     ekf_.Update(measurement_pack.raw_measurements_);
   }
