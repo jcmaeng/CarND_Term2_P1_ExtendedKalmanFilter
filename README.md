@@ -30,4 +30,4 @@
 5. Select 1/2 project and start with ***Dataset1***
 6. Result is as follows
 
-![simulator result](./images/sim_result.png)
+![simulator result](./images/sim_capture.png)
